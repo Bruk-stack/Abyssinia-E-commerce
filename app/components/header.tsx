@@ -58,7 +58,7 @@ export function Navigation() {
   };
 
   return (
-    <nav className="w-full flex justify-between items-center bg-white dark:bg-black text-gray-900 dark:text-gray-100 shadow-lg sticky top-0 z-50 px-4 md:px-8 py-3 transition-colors duration-200">
+    <nav className="w-full flex justify-between items-center bg-black dark:bg-black text-gray-900 dark:text-gray-100 shadow-lg sticky top-0 z-50 px-4 md:px-8 py-3 transition-colors duration-200">
       {/* Logo */}
       <Link href="/" className="flex-shrink-0">
         <img

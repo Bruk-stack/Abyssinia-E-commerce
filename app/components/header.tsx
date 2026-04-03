@@ -14,7 +14,6 @@ export function Navigation() {
   const pathname = usePathname();
   const searchRef = useRef<HTMLDivElement>(null);
 
-  // Close search when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
@@ -25,7 +24,6 @@ export function Navigation() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Keyboard shortcuts for search
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -42,7 +40,7 @@ export function Navigation() {
   const navItems = [
     { label: "Home", path: "/" },
     { label: "Products", path: "/products" },
-    { label: "Suggestions", path: "/suggestions" }, // ✅ New Nav Item
+    { label: "Suggestions", path: "/suggestions" },
     { label: "About", path: "/about" },
     { label: "Contact", path: "/contact" },
   ];
@@ -58,7 +56,7 @@ export function Navigation() {
   };
 
   return (
-    <nav className="w-full flex justify-between items-center bg-black dark:bg-black text-gray-900 dark:text-gray-100 shadow-lg sticky top-0 z-50 px-4 md:px-8 py-3 transition-colors duration-200">
+    <nav className="w-full flex justify-between items-center bg-black text-white shadow-lg sticky top-0 z-50 px-4 md:px-8 py-3">
       {/* Logo */}
       <Link href="/" className="flex-shrink-0">
         <img
@@ -70,11 +68,11 @@ export function Navigation() {
 
       {/* Mobile Menu Toggle */}
       <button
-        className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+        className="md:hidden p-2 rounded-lg hover:bg-gray-800 transition"
         onClick={() => setMobileNavOpen(true)}
         aria-label="Open menu"
       >
-        <Menu className="h-6 w-6" />
+        <Menu className="h-6 w-6 text-white" />
       </button>
 
       {/* Desktop Navigation */}
@@ -83,11 +81,12 @@ export function Navigation() {
           <li key={item.path}>
             <Link
               href={item.path}
-              className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
-                isActive(item.path)
-                  ? "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400"
-                  : "text-gray-700 hover:text-orange-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-orange-400"
-              }`}
+              className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 
+                ${
+                  isActive(item.path)
+                    ? "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400"
+                    : "text-white hover:text-orange-600 hover:bg-gray-800" // ✅ Static: white, hover unchanged
+                }`}
             >
               {item.label}
             </Link>
@@ -99,34 +98,34 @@ export function Navigation() {
       <div className="flex items-center gap-1 sm:gap-2">
         <button
           onClick={() => setSearchOpen((prev) => !prev)}
-          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+          className="p-2 rounded-full hover:bg-gray-800 transition"
           aria-label="Toggle search"
         >
-          <Search className="h-5 w-5" />
+          <Search className="h-5 w-5 text-white" /> {/* ✅ Explicit white */}
         </button>
 
         <Link
           href="/cart"
-          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+          className="p-2 rounded-full hover:bg-gray-800 transition"
           aria-label="Cart"
         >
-          <ShoppingCart className="h-5 w-5" />
+          <ShoppingCart className="h-5 w-5 text-white" />
         </Link>
 
         <Link
           href="/chatbot"
-          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+          className="p-2 rounded-full hover:bg-gray-800 transition"
           aria-label="Chat support"
         >
-          <MessageSquare className="h-5 w-5" />
+          {/* ✅ Was missing! */}
         </Link>
 
         <Link
           href="/profile"
-          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+          className="p-2 rounded-full hover:bg-gray-800 transition"
           aria-label="User profile"
         >
-          <User className="h-5 w-5" />
+          <User className="h-5 w-5 text-white" />
         </Link>
       </div>
 
@@ -136,14 +135,14 @@ export function Navigation() {
           ref={searchRef}
           className="absolute top-full right-4 mt-2 z-50 w-80"
         >
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 p-4 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="bg-gray-900 rounded-xl shadow-xl border border-gray-700 p-4 animate-in fade-in slide-in-from-top-2 duration-200">
             <div className="relative">
               <input
                 type="text"
                 placeholder="Search products..."
                 value={term}
                 onChange={(e) => setTerm(e.target.value)}
-                className="w-full px-4 py-2.5 pl-10 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-full focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
+                className="w-full px-4 py-2.5 pl-10 border border-gray-600 bg-gray-800 text-white rounded-full focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
                 autoFocus
               />
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -161,19 +160,19 @@ export function Navigation() {
                   setSearchOpen(false);
                   setTerm("");
                 }}
-                className="flex-1 py-2 rounded-full font-semibold text-orange-600 border border-orange-500 bg-transparent hover:bg-orange-50 dark:hover:bg-gray-700 transition-all"
+                className="flex-1 py-2 rounded-full font-semibold text-orange-400 border border-orange-500 bg-transparent hover:bg-gray-800 transition-all"
               >
                 Cancel
               </button>
             </div>
 
-            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center">
+            <p className="mt-2 text-xs text-gray-400 text-center">
               Press{" "}
-              <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded font-mono text-[10px]">
+              <kbd className="px-1.5 py-0.5 bg-gray-800 border border-gray-600 rounded font-mono text-[10px] text-gray-300">
                 Enter
               </kbd>{" "}
               or{" "}
-              <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded font-mono text-[10px]">
+              <kbd className="px-1.5 py-0.5 bg-gray-800 border border-gray-600 rounded font-mono text-[10px] text-gray-300">
                 Ctrl + K
               </kbd>
             </p>

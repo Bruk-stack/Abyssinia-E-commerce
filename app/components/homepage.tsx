@@ -1,6 +1,11 @@
 "use client";
 
+import { FloatingChatButton } from "./chatbot";
+import { useRouter } from "next/navigation";
+
 export default function HomePage() {
+  const router = useRouter();
+
   return (
     <main className="relative w-full h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
@@ -38,6 +43,7 @@ export default function HomePage() {
           </a>
         </div>
       </div>
+      <FloatingChatButton onClick={() => router.push("/chatbot")} />
     </main>
   );
 }

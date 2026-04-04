@@ -1,3 +1,4 @@
+// app/product/ProductInfoClient.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -37,10 +38,10 @@ interface Product {
 
 // Helper to normalize _id to string
 const getProductId = (id: string | MongoDBObjectId): string => {
-  return typeof id === "string" ? id : id.$oid;
+  return typeof id === "string" ? id : (id as MongoDBObjectId).$oid;
 };
 
-export function ProductInfo() {
+export function ProductInfoClient() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [product, setProduct] = useState<Product | null>(null);
@@ -74,13 +75,12 @@ export function ProductInfo() {
         if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
 
         const data = await res.json();
-        console.log(data);
         if (!data.success)
           throw new Error(data.error || "Failed to load product");
 
         if (isMounted) {
           setProduct(data.product);
-          setImageLoaded(false); // Reset image load state for new product
+          setImageLoaded(false);
         }
       } catch (err: any) {
         if (isMounted) {
@@ -96,42 +96,29 @@ export function ProductInfo() {
     return () => {
       isMounted = false;
     };
-  }, [searchParams]); // ✅ Fixed: added dependency
+  }, [searchParams]);
 
-  // ✅ Handle direct "Buy Now" payment for single product
   const handleBuyNow = () => {
     if (!product) return;
-
-    // ✅ Open payment overlay with single product
     setShowPayment(true);
     setPaymentError(null);
   };
 
   const handleAddToCart = () => {
     if (!product) return;
-
     const productId = getProductId(product._id);
-    console.log("Added to cart:", productId);
 
     try {
-      // 1. Safely get and parse existing cart
       const stored = localStorage.getItem("cart_items");
       let existingCart: string[] = stored ? JSON.parse(stored) : [];
 
-      // 2. Prevent duplicates
       if (!existingCart.includes(productId)) {
         existingCart.push(productId);
-
-        // 3. Save back to localStorage
         localStorage.setItem("cart_items", JSON.stringify(existingCart));
         alert("Product added to cart");
-
-        // Optional: Show user feedback
-        // showToast("Added to cart!", "success");
       }
     } catch (err) {
       console.error("Failed to update cart:", err);
-      // Fallback: start fresh if localStorage is corrupted
       localStorage.setItem("cart_items", JSON.stringify([productId]));
     }
   };
@@ -147,9 +134,7 @@ export function ProductInfo() {
           <span className="font-medium">Loading product details...</span>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
-          {/* Image Skeleton */}
           <div className="bg-gray-200 dark:bg-gray-800 rounded-2xl h-96 animate-pulse" />
-          {/* Content Skeleton */}
           <div className="space-y-4">
             <div className="h-8 bg-gray-200 dark:bg-gray-800 rounded w-3/4 animate-pulse" />
             <div className="h-4 bg-gray-200 dark:bg-gray-800 rounded w-1/4 animate-pulse" />
@@ -201,7 +186,7 @@ export function ProductInfo() {
 
   return (
     <section className="container mx-auto px-4 py-8 lg:py-12">
-      {/* ✅ Payment Overlay for "Buy Now" flow */}
+      {/* Payment Overlay */}
       {product && (
         <PaymentOverlay
           isOpen={showPayment}
@@ -209,21 +194,13 @@ export function ProductInfo() {
             setShowPayment(false);
             setPaymentError(null);
           }}
-          // ✅ Pass single product as array (PaymentOverlay accepts both)
           products={[{ id: getProductId(product._id), quantity: 1 }]}
-          amount={product.price} // ✅ Single product price
+          amount={product.price}
           currency="usd"
           onSuccess={() => {
-            // ✅ Payment succeeded!
             setShowPayment(false);
-
-            // Show simple success feedback (hackathon style)
             alert(`✅ Order placed! Total: $${product.price.toFixed(2)}`);
-
-            // Redirect to products after short delay
-            setTimeout(() => {
-              router.push("/products");
-            }, 1500);
+            setTimeout(() => router.push("/products"), 1500);
           }}
           onError={(error) => {
             setPaymentError(error);
@@ -237,7 +214,8 @@ export function ProductInfo() {
           ⚠️ {paymentError}
         </p>
       )}
-      {/* Breadcrumb / Back */}
+
+      {/* Back Button */}
       <button
         onClick={handleBack}
         className="mb-6 flex items-center gap-2 text-sm text-gray-600 hover:text-orange-600 dark:text-gray-400 dark:hover:text-orange-400 transition group"
@@ -246,35 +224,32 @@ export function ProductInfo() {
         Back to products
       </button>
 
+      {/* Product Content */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 max-w-6xl mx-auto">
-        {/* Product Image */}
+        {/* Image */}
         <div className="relative group">
           <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-            {/* Loading overlay */}
             {!imageLoaded && (
               <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800 animate-pulse">
                 <Loader2 className="h-8 w-8 text-gray-400 animate-spin" />
               </div>
             )}
-
             <img
               src={product.src}
               alt={product.type}
-              className={` h-full object-cover transition-transform duration-500 group-hover:scale-105 ${
+              className={`h-full object-cover transition-transform duration-500 group-hover:scale-105 ${
                 imageLoaded ? "opacity-100" : "opacity-0"
               }`}
               onLoad={() => setImageLoaded(true)}
               loading="lazy"
             />
-
-            {/* Category Badge */}
             <span className="absolute top-4 left-4 px-3 py-1.5 text-xs font-semibold text-white bg-black/60 backdrop-blur-sm rounded-full">
               {product.category}
             </span>
           </div>
         </div>
 
-        {/* Product Details */}
+        {/* Details */}
         <Card className="border-0 shadow-none lg:shadow-lg lg:border lg:border-gray-200 lg:dark:border-gray-800 lg:rounded-2xl">
           <CardHeader className="pb-4">
             <div className="flex items-start justify-between gap-4">
@@ -326,7 +301,7 @@ export function ProductInfo() {
               </div>
             </div>
 
-            {/* Description placeholder */}
+            {/* Description */}
             <div className="prose prose-sm dark:prose-invert max-w-none text-gray-600 dark:text-gray-400">
               <p>
                 Premium quality {product.type.toLowerCase()} crafted with
@@ -336,7 +311,7 @@ export function ProductInfo() {
               </p>
             </div>
 
-            {/* Search Tags (for SEO/internal use) */}
+            {/* Tags */}
             <div className="flex flex-wrap gap-2">
               {product.searchTerm.slice(0, 5).map((tag: string) => (
                 <span
@@ -358,7 +333,7 @@ export function ProductInfo() {
               Add to Cart
             </button>
             <button
-              onClick={handleBuyNow} // ✅ Changed from handleAddToCart
+              onClick={handleBuyNow}
               className="flex-1 sm:flex-none px-6 py-3.5 text-base font-semibold text-orange-600 border-2 border-orange-500 bg-transparent hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-xl transition"
             >
               Buy Now

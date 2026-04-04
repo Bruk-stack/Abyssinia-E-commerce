@@ -1,7 +1,7 @@
 // app/product/page.tsx
 "use client";
 import { Navigation } from "../components/header";
-import { ProductInfo } from "./components/product";
+import { ProductInfoClient } from "./components/product";
 
 // ✅ Keep this - forces dynamic rendering for useSearchParams
 export const dynamic = "force-dynamic";
@@ -13,7 +13,7 @@ export default function Page() {
   return (
     <div>
       <Navigation />
-      <ProductInfo />
+      <ProductInfoClient />
     </div>
   );
 }

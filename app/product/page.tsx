@@ -1,5 +1,3 @@
-// app/product/page.tsx
-"use client";
 import { Navigation } from "../components/header";
 import { ProductInfoClient } from "./components/product";
 

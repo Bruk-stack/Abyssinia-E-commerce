@@ -1,7 +1,8 @@
+// app/components/ContactForm.tsx (or wherever your form lives)
 "use client";
 
-import { useState } from "react";
-import { Send, CheckCircle, Loader2 } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Send, CheckCircle, Loader2, Sparkles, X, Wand2 } from "lucide-react";
 
 export function ContactForm() {
   const [formState, setFormState] = useState<"idle" | "sending" | "success">(
@@ -14,6 +15,66 @@ export function ContactForm() {
     message: "",
   });
 
+  // ✅ AI Vocabulary suggestion state
+  const [suggestion, setSuggestion] = useState<string>("");
+  const [suggestionLoading, setSuggestionLoading] = useState(false);
+  const [suggestionError, setSuggestionError] = useState<string | null>(null);
+  const [showSuggestion, setShowSuggestion] = useState(false);
+
+  // ✅ Debounce ref to avoid API spam
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // ✅ Fetch vocabulary suggestions when message changes
+  useEffect(() => {
+    // Clear previous debounce
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    // Only trigger if message has content and is long enough to be useful
+    if (!formData.message || formData.message.length < 20) {
+      setSuggestion("");
+      setShowSuggestion(false);
+      return;
+    }
+
+    // ✅ Debounce: wait 1000ms after user stops typing
+    debounceRef.current = setTimeout(async () => {
+      const controller = new AbortController();
+      setSuggestionLoading(true);
+      setSuggestionError(null);
+
+      try {
+        const res = await fetch("/api/feedback-suggest", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: formData.message }),
+          signal: controller.signal,
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.error || "Failed to get suggestions");
+
+        if (data.success && data.suggestion) {
+          setSuggestion(data.suggestion);
+          setShowSuggestion(true);
+        }
+      } catch (err: any) {
+        if (err.name !== "AbortError") {
+          console.error("❌ Vocabulary suggestion error:", err);
+          setSuggestionError("Could not load suggestions");
+        }
+      } finally {
+        setSuggestionLoading(false);
+      }
+
+      return () => controller.abort();
+    }, 1000); // 1 second debounce
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [formData.message]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormState("sending");
@@ -23,8 +84,9 @@ export function ContactForm() {
 
     setFormState("success");
     setFormData({ name: "", email: "", subject: "", message: "" });
+    setSuggestion("");
+    setShowSuggestion(false);
 
-    // Reset success state after 5 seconds
     setTimeout(() => setFormState("idle"), 5000);
   };
 
@@ -32,6 +94,19 @@ export function ContactForm() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    // Hide suggestion when user edits after applying
+    if (e.target.name === "message" && showSuggestion) {
+      setShowSuggestion(false);
+    }
+  };
+
+  // ✅ Apply the AI suggestion to the message field
+  const applySuggestion = () => {
+    if (suggestion) {
+      setFormData((prev) => ({ ...prev, message: suggestion }));
+      setSuggestion("");
+      setShowSuggestion(false);
+    }
   };
 
   return (
@@ -154,9 +229,90 @@ export function ContactForm() {
                   placeholder="Tell us how we can help..."
                   className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all text-gray-900 dark:text-white placeholder-gray-400 resize-none"
                 />
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 text-right">
-                  {formData.message.length}/500 characters
-                </p>
+                <div className="flex justify-between items-center mt-1">
+                  <p className="text-xs text-gray-400 dark:text-gray-500">
+                    {formData.message.length}/500 characters
+                  </p>
+
+                  {/* ✅ AI Vocabulary Suggestion Button */}
+                  {formData.message.length >= 20 &&
+                    !showSuggestion &&
+                    !suggestionLoading && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          // Trigger suggestion fetch manually if user clicks
+                          setSuggestionLoading(true);
+                          // Force re-run effect by temporarily clearing message
+                          const current = formData.message;
+                          setFormData((prev) => ({ ...prev, message: "" }));
+                          setTimeout(() => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              message: current,
+                            }));
+                          }, 10);
+                        }}
+                        className="text-xs flex items-center gap-1 text-orange-600 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300 font-medium"
+                      >
+                        <Wand2 className="w-3 h-3" />
+                        Improve wording
+                      </button>
+                    )}
+                </div>
+
+                {/* ✅ AI Suggestion Box */}
+                {showSuggestion && (
+                  <div className="mt-3 p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl">
+                    <div className="flex items-start gap-2">
+                      <Sparkles className="w-4 h-4 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-orange-800 dark:text-orange-300 mb-1">
+                          💡 Suggested improvement:
+                        </p>
+                        <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                          {suggestionLoading ? (
+                            <span className="flex items-center gap-2 text-orange-600 dark:text-orange-400">
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                              Polishing your message...
+                            </span>
+                          ) : suggestionError ? (
+                            <span className="text-red-600 dark:text-red-400">
+                              {suggestionError}
+                            </span>
+                          ) : (
+                            suggestion
+                          )}
+                        </p>
+
+                        {/* Action buttons */}
+                        {suggestion && !suggestionLoading && (
+                          <div className="mt-2 flex gap-2">
+                            <button
+                              type="button"
+                              onClick={applySuggestion}
+                              className="text-xs px-3 py-1 bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 rounded-lg hover:bg-orange-200 dark:hover:bg-orange-900/60 transition flex items-center gap-1"
+                            >
+                              <CheckCircle className="w-3 h-3" />
+                              Use this
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setShowSuggestion(false);
+                                setSuggestion("");
+                              }}
+                              className="text-xs px-3 py-1 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition flex items-center gap-1"
+                            >
+                              <X className="w-3 h-3" />
+                              Dismiss
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Submit Button */}

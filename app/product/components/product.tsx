@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { PaymentOverlay } from "@/app/stripe/paymentOverlay";
 import {
   Card,
   CardContent,
@@ -46,6 +47,8 @@ export function ProductInfo() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   useEffect(() => {
     const productId = searchParams.get("id");
@@ -95,11 +98,42 @@ export function ProductInfo() {
     };
   }, [searchParams]); // ✅ Fixed: added dependency
 
+  // ✅ Handle direct "Buy Now" payment for single product
+  const handleBuyNow = () => {
+    if (!product) return;
+
+    // ✅ Open payment overlay with single product
+    setShowPayment(true);
+    setPaymentError(null);
+  };
+
   const handleAddToCart = () => {
     if (!product) return;
-    // TODO: Integrate with your cart state/context
-    console.log("Added to cart:", getProductId(product._id));
-    // Example: dispatch({ type: 'ADD_TO_CART', payload: product })
+
+    const productId = getProductId(product._id);
+    console.log("Added to cart:", productId);
+
+    try {
+      // 1. Safely get and parse existing cart
+      const stored = localStorage.getItem("cart_items");
+      let existingCart: string[] = stored ? JSON.parse(stored) : [];
+
+      // 2. Prevent duplicates
+      if (!existingCart.includes(productId)) {
+        existingCart.push(productId);
+
+        // 3. Save back to localStorage
+        localStorage.setItem("cart_items", JSON.stringify(existingCart));
+        alert("Product added to cart");
+
+        // Optional: Show user feedback
+        // showToast("Added to cart!", "success");
+      }
+    } catch (err) {
+      console.error("Failed to update cart:", err);
+      // Fallback: start fresh if localStorage is corrupted
+      localStorage.setItem("cart_items", JSON.stringify([productId]));
+    }
   };
 
   const handleBack = () => router.back();
@@ -167,6 +201,42 @@ export function ProductInfo() {
 
   return (
     <section className="container mx-auto px-4 py-8 lg:py-12">
+      {/* ✅ Payment Overlay for "Buy Now" flow */}
+      {product && (
+        <PaymentOverlay
+          isOpen={showPayment}
+          onClose={() => {
+            setShowPayment(false);
+            setPaymentError(null);
+          }}
+          // ✅ Pass single product as array (PaymentOverlay accepts both)
+          products={[{ id: getProductId(product._id), quantity: 1 }]}
+          amount={product.price} // ✅ Single product price
+          currency="usd"
+          onSuccess={() => {
+            // ✅ Payment succeeded!
+            setShowPayment(false);
+
+            // Show simple success feedback (hackathon style)
+            alert(`✅ Order placed! Total: $${product.price.toFixed(2)}`);
+
+            // Redirect to products after short delay
+            setTimeout(() => {
+              router.push("/products");
+            }, 1500);
+          }}
+          onError={(error) => {
+            setPaymentError(error);
+            console.error("Payment error:", error);
+          }}
+        />
+      )}
+
+      {paymentError && (
+        <p className="mt-2 text-sm text-red-600 text-center bg-red-50 px-3 py-2 rounded-lg">
+          ⚠️ {paymentError}
+        </p>
+      )}
       {/* Breadcrumb / Back */}
       <button
         onClick={handleBack}
@@ -287,7 +357,10 @@ export function ProductInfo() {
               <ShoppingCart className="h-5 w-5" />
               Add to Cart
             </button>
-            <button className="flex-1 sm:flex-none px-6 py-3.5 text-base font-semibold text-orange-600 border-2 border-orange-500 bg-transparent hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-xl transition">
+            <button
+              onClick={handleBuyNow} // ✅ Changed from handleAddToCart
+              className="flex-1 sm:flex-none px-6 py-3.5 text-base font-semibold text-orange-600 border-2 border-orange-500 bg-transparent hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded-xl transition"
+            >
               Buy Now
             </button>
           </CardFooter>

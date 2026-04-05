@@ -8,18 +8,15 @@ export default function HomePage() {
 
   return (
     <main className="relative w-full h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <img
           src="/Gemini_Generated_Image_kr9xw6kr9xw6kr9x.png"
           alt="Shopping lifestyle background"
           className="w-full h-full object-cover"
         />
-        {/* Dark gradient overlay for text contrast */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60"></div>
       </div>
 
-      {/* Hero Content */}
       <div className="relative z-10 text-center px-6 max-w-3xl mx-auto">
         <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-4 leading-tight tracking-tight">
           Style Meets Simplicity

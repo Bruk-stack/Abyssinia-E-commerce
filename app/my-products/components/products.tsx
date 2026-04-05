@@ -1,4 +1,3 @@
-// app/my-products/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -13,7 +12,6 @@ import {
   Plus,
 } from "lucide-react";
 
-// ✅ Types (adjust to match your Product model)
 interface Product {
   _id: string;
   type: string;
@@ -68,9 +66,8 @@ export default function MyProducts() {
     };
 
     fetchMyProducts();
-  }, []); // ✅ No deps needed - userId comes from localStorage inside effect
+  }, []);
 
-  // --- Loading State ---
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
@@ -84,7 +81,6 @@ export default function MyProducts() {
     );
   }
 
-  // --- Error State ---
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-4">
@@ -115,7 +111,6 @@ export default function MyProducts() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      {/* Header */}
       <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
@@ -148,7 +143,6 @@ export default function MyProducts() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Empty State */}
         {products.length === 0 ? (
           <div className="bg-white dark:bg-gray-900 rounded-2xl p-12 text-center shadow-sm border border-gray-200 dark:border-gray-800">
             <Package className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
@@ -168,7 +162,6 @@ export default function MyProducts() {
           </div>
         ) : (
           <>
-            {/* Stats Bar */}
             <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
               <p className="text-gray-600 dark:text-gray-400">
                 <span className="font-semibold text-gray-900 dark:text-white">
@@ -185,14 +178,12 @@ export default function MyProducts() {
               </button>
             </div>
 
-            {/* Products Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {products.map((product) => (
                 <div
                   key={product._id}
                   className="group bg-white dark:bg-gray-900 rounded-2xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-800 hover:shadow-md hover:border-orange-200 dark:hover:border-orange-800 transition"
                 >
-                  {/* Product Image */}
                   <div className="relative aspect-square bg-gray-100 dark:bg-gray-800 overflow-hidden">
                     <img
                       src={product.src}
@@ -200,13 +191,11 @@ export default function MyProducts() {
                       className="h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       loading="lazy"
                     />
-                    {/* Category Badge */}
                     <span className="absolute top-3 left-3 px-2.5 py-1 text-xs font-medium bg-white/90 dark:bg-gray-900/90 text-gray-700 dark:text-gray-300 rounded-full backdrop-blur-sm">
                       {product.category}
                     </span>
                   </div>
 
-                  {/* Product Info */}
                   <div className="p-4">
                     <h3 className="font-semibold text-gray-900 dark:text-white truncate mb-1">
                       {product.type}
@@ -215,7 +204,6 @@ export default function MyProducts() {
                       {product.color}
                     </p>
 
-                    {/* Price & Actions */}
                     <div className="flex items-center justify-between">
                       <span className="text-lg font-bold text-orange-600 dark:text-orange-400">
                         ${product.price.toFixed(2)}
@@ -224,14 +212,12 @@ export default function MyProducts() {
                         <button
                           className="p-2 text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
                           title="Edit"
-                          // onClick={() => router.push(`/products/edit/${product._id}`)}
                         >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
                           className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
                           title="Delete"
-                          // onClick={() => handleDelete(product._id)}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>

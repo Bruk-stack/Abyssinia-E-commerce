@@ -1,4 +1,3 @@
-// app/components/ContactForm.tsx (or wherever your form lives)
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -15,28 +14,22 @@ export function ContactForm() {
     message: "",
   });
 
-  // ✅ AI Vocabulary suggestion state
   const [suggestion, setSuggestion] = useState<string>("");
   const [suggestionLoading, setSuggestionLoading] = useState(false);
   const [suggestionError, setSuggestionError] = useState<string | null>(null);
   const [showSuggestion, setShowSuggestion] = useState(false);
 
-  // ✅ Debounce ref to avoid API spam
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // ✅ Fetch vocabulary suggestions when message changes
   useEffect(() => {
-    // Clear previous debounce
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
-    // Only trigger if message has content and is long enough to be useful
     if (!formData.message || formData.message.length < 20) {
       setSuggestion("");
       setShowSuggestion(false);
       return;
     }
 
-    // ✅ Debounce: wait 1000ms after user stops typing
     debounceRef.current = setTimeout(async () => {
       const controller = new AbortController();
       setSuggestionLoading(true);
@@ -68,7 +61,7 @@ export function ContactForm() {
       }
 
       return () => controller.abort();
-    }, 1000); // 1 second debounce
+    }, 1000);
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -79,7 +72,6 @@ export function ContactForm() {
     e.preventDefault();
     setFormState("sending");
 
-    // TODO: Replace with your actual API call
     await new Promise((resolve) => setTimeout(resolve, 1500));
 
     setFormState("success");
@@ -94,13 +86,11 @@ export function ContactForm() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-    // Hide suggestion when user edits after applying
     if (e.target.name === "message" && showSuggestion) {
       setShowSuggestion(false);
     }
   };
 
-  // ✅ Apply the AI suggestion to the message field
   const applySuggestion = () => {
     if (suggestion) {
       setFormData((prev) => ({ ...prev, message: suggestion }));
@@ -112,7 +102,6 @@ export function ContactForm() {
   return (
     <section className="bg-gray-50 dark:bg-gray-950 py-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
-        {/* Header */}
         <div className="text-center mb-12">
           <span className="inline-block px-4 py-1.5 text-xs font-semibold tracking-wider text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/30 rounded-full mb-4">
             GET IN TOUCH
@@ -126,7 +115,6 @@ export function ContactForm() {
           </p>
         </div>
 
-        {/* Form Card */}
         <div className="bg-white dark:bg-gray-900 rounded-2xl p-8 md:p-10 border border-gray-200 dark:border-gray-800 shadow-sm">
           {formState === "success" ? (
             // ✅ Success State
@@ -149,9 +137,7 @@ export function ContactForm() {
               </button>
             </div>
           ) : (
-            // 📝 Form State
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Name + Email Row */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label
@@ -191,7 +177,6 @@ export function ContactForm() {
                 </div>
               </div>
 
-              {/* Subject */}
               <div>
                 <label
                   htmlFor="subject"
@@ -211,7 +196,6 @@ export function ContactForm() {
                 />
               </div>
 
-              {/* Message */}
               <div>
                 <label
                   htmlFor="message"
@@ -234,16 +218,13 @@ export function ContactForm() {
                     {formData.message.length}/500 characters
                   </p>
 
-                  {/* ✅ AI Vocabulary Suggestion Button */}
                   {formData.message.length >= 20 &&
                     !showSuggestion &&
                     !suggestionLoading && (
                       <button
                         type="button"
                         onClick={() => {
-                          // Trigger suggestion fetch manually if user clicks
                           setSuggestionLoading(true);
-                          // Force re-run effect by temporarily clearing message
                           const current = formData.message;
                           setFormData((prev) => ({ ...prev, message: "" }));
                           setTimeout(() => {
@@ -261,7 +242,6 @@ export function ContactForm() {
                     )}
                 </div>
 
-                {/* ✅ AI Suggestion Box */}
                 {showSuggestion && (
                   <div className="mt-3 p-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl">
                     <div className="flex items-start gap-2">
@@ -285,7 +265,6 @@ export function ContactForm() {
                           )}
                         </p>
 
-                        {/* Action buttons */}
                         {suggestion && !suggestionLoading && (
                           <div className="mt-2 flex gap-2">
                             <button
@@ -315,7 +294,6 @@ export function ContactForm() {
                 )}
               </div>
 
-              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={
@@ -339,7 +317,6 @@ export function ContactForm() {
                 )}
               </button>
 
-              {/* Trust Note */}
               <p className="text-xs text-center text-gray-400 dark:text-gray-500">
                 We respect your privacy. Your information is never shared or
                 sold.

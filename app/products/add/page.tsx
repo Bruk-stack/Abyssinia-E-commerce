@@ -1,5 +1,4 @@
-// app/products/add/page.tsx
-import ProductForm from "./components/form"; // adjust path
+import ProductForm from "./components/form";
 export const dynamic = "force-dynamic";
 
 export default function AddProductPage() {

@@ -2,7 +2,6 @@ import { connectDB } from "@/app/lib/db";
 import { NextResponse } from "next/server";
 import Product from "@/app/models/product";
 
-// ✅ Fixed constants
 const FIXED_USER_ID = "64f2a9c1e3b8a7d9f4c2b1e8";
 const FIXED_IN_STOCK = 50;
 
@@ -11,7 +10,6 @@ export async function GET(req: Request) {
     await connectDB();
 
     const insertedDocs = await Product.insertMany([
-      // --- Image 0 Items ---
       {
         type: "Soft Fabric Casual Dress",
         color: "Biege",
@@ -75,7 +73,6 @@ export async function GET(req: Request) {
           "Cozy meets chic in this textured beige knit top. The intricate knit pattern adds visual interest while the soft, warm fabric makes it perfect for cooler days. Layer it over a camisole for work, or pair with high-waisted jeans for weekend errands. The neutral beige tone complements any color palette, making it an easy addition to your everyday rotation.",
       },
 
-      // --- Image 2 Items ---
       {
         type: "Royal Blue Formal Shirt",
         color: "Blue",

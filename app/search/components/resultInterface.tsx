@@ -15,7 +15,6 @@ interface Product {
   searchTerm: string[];
 }
 
-// ✅ Safe localStorage helpers
 const SearchHistory = {
   add: (term: string) => {
     if (typeof window === "undefined" || !term?.trim()) return;
@@ -24,14 +23,12 @@ const SearchHistory = {
       const raw = localStorage.getItem("key-words");
       let history: string[] = raw ? JSON.parse(raw) : [];
 
-      // Deduplicate + keep last 20 + newest first
       history = [
         term.trim(),
         ...history.filter((t: string) => t !== term.trim()),
       ].slice(0, 20);
       localStorage.setItem("key-words", JSON.stringify(history));
     } catch {
-      // Fallback if JSON is corrupted
       localStorage.setItem("key-words", JSON.stringify([term.trim()]));
     }
   },
@@ -54,7 +51,6 @@ export function SearchResult() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
 
-  // ✅ Memoized fetch to prevent re-creation on every render
   const fetchResults = useCallback(async (term: string) => {
     if (!term?.trim()) {
       setError("Please enter a search term");
@@ -66,7 +62,6 @@ export function SearchResult() {
       setLoading(true);
       setError(null);
 
-      // ✅ Save to history safely
       SearchHistory.add(term);
 
       const res = await fetch("/api/search", {
@@ -90,7 +85,6 @@ export function SearchResult() {
     }
   }, []);
 
-  // ✅ React to search param changes + prevent memory leaks
   useEffect(() => {
     let isMounted = true;
     const term = searchParams.get("q");
@@ -115,9 +109,8 @@ export function SearchResult() {
     return () => {
       isMounted = false;
     };
-  }, [searchParams, fetchResults]); // ✅ Critical: re-fetch when query changes
+  }, [searchParams, fetchResults]);
 
-  // --- Loading State ---
   if (loading) {
     return (
       <section className="container mx-auto px-4 py-10">
@@ -137,7 +130,6 @@ export function SearchResult() {
     );
   }
 
-  // --- Error State ---
   if (error) {
     return (
       <section className="container mx-auto px-4 py-16">
@@ -166,7 +158,6 @@ export function SearchResult() {
     );
   }
 
-  // --- Empty State ---
   if (products.length === 0) {
     return (
       <section className="container mx-auto px-4 py-16">
@@ -193,10 +184,8 @@ export function SearchResult() {
     );
   }
 
-  // --- Success State ---
   return (
     <section className="container mx-auto px-4 py-10">
-      {/* Header with search term */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-orange-500" />
@@ -209,7 +198,6 @@ export function SearchResult() {
         </span>
       </div>
 
-      {/* Product Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {products.map((product) => (
           <Card

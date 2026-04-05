@@ -1,10 +1,8 @@
-// app/lib/placeOrder.ts
 import Product from "../models/product";
 import { Order } from "../models/order";
 import { connectDB } from "./db";
 import { verifyPaymentIntent } from "../stripe/stripeServices";
 
-// ✅ Type definitions
 interface ProductInput {
   id?: string;
   productId?: string;
@@ -26,9 +24,7 @@ interface OrderResult {
   error?: string;
 }
 
-// ✅ Robust normalization: handles single object, array, or stringified JSON
 function normalizeProducts(input: any): NormalizedProduct[] {
-  // Handle stringified JSON (edge case: double-stringify)
   if (typeof input === "string") {
     try {
       input = JSON.parse(input);
@@ -37,12 +33,10 @@ function normalizeProducts(input: any): NormalizedProduct[] {
     }
   }
 
-  // Handle null/undefined
   if (!input) {
     throw new Error("Products cannot be empty");
   }
 
-  // Handle single product object → wrap in array
   if (typeof input === "object" && !Array.isArray(input)) {
     const id = input.id || input.productId || input._id;
     if (!id || typeof id !== "string") {
@@ -54,7 +48,6 @@ function normalizeProducts(input: any): NormalizedProduct[] {
     return [{ id, quantity: input.quantity }];
   }
 
-  // Handle array of products
   if (Array.isArray(input)) {
     return input.map((item, index) => {
       const id = item.id || item.productId || item._id;
@@ -71,7 +64,6 @@ function normalizeProducts(input: any): NormalizedProduct[] {
   throw new Error("Products must be an object or array of objects");
 }
 
-// ✅ Calculate order totals and validate products exist in DB
 async function calculateOrderDetails(products: NormalizedProduct[]) {
   await connectDB();
 
@@ -113,30 +105,26 @@ async function calculateOrderDetails(products: NormalizedProduct[]) {
   }
 
   return {
-    total: Math.round(total * 100) / 100, // Round to 2 decimals
+    total: Math.round(total * 100) / 100,
     orderItems,
   };
 }
 
-// ✅ Main function: placeOrder (NO AUTH LOGIC, userId passed through unchanged)
 export async function placeOrder(
   products: any,
-  userId: string, // ✅ Kept as-is: route.ts passes this from localStorage
+  userId: string,
   paymentIntentId: string,
 ): Promise<OrderResult> {
   try {
-    // 1. Normalize input (single or array)
     const normalizedProducts = normalizeProducts(products);
 
     if (normalizedProducts.length === 0) {
       return { success: false, error: "No products provided" };
     }
 
-    // 2. Calculate order details & validate products
     const { total: expectedTotal, orderItems } =
       await calculateOrderDetails(normalizedProducts);
 
-    // 3. Verify payment with Stripe
     const paymentVerification = await verifyPaymentIntent(paymentIntentId);
 
     if (!paymentVerification.success) {
@@ -146,7 +134,6 @@ export async function placeOrder(
       };
     }
 
-    // 4. Security check: ensure paid amount matches order total
     if (Math.abs(paymentVerification.amount - expectedTotal) > 0.01) {
       console.error("⚠️ PAYMENT AMOUNT MISMATCH", {
         expected: expectedTotal,
@@ -158,9 +145,8 @@ export async function placeOrder(
       };
     }
 
-    // 5. Create order in database
     const order = await Order.create({
-      userId, // ✅ Passed through unchanged from route.ts
+      userId,
       items: orderItems,
       total: expectedTotal,
       currency: paymentVerification.currency || "usd",

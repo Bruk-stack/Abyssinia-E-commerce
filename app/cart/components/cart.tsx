@@ -32,10 +32,8 @@ export function Cart() {
   const [loading, setLoading] = useState(true);
   const [showPayment, setShowPayment] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
-  // Inside your Cart component, add this near other states:
   const [paidAmount, setPaidAmount] = useState(0);
 
-  // Load cart from localStorage on mount
   useEffect(() => {
     let isMounted = true;
 
@@ -67,10 +65,8 @@ export function Cart() {
 
         if (!isMounted) return;
 
-        // ✅ Map directly from API response to products state
         setProducts(data.products);
 
-        // ✅ Initialize quantities (default to 1)
         const initialQuantities: Record<string, number> = {};
         data.products.forEach((p: Product) => {
           initialQuantities[p._id] = 1;
@@ -85,7 +81,6 @@ export function Cart() {
 
     loadCart();
 
-    // Listen for localStorage changes from other tabs
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === "cart_items" && isMounted) {
         loadCart();
@@ -99,7 +94,6 @@ export function Cart() {
     };
   }, []);
 
-  // ✅ Convert products + quantities to overlay format
   const getPaymentProducts = () => {
     return products.map((p) => ({
       id: p._id,
@@ -107,7 +101,6 @@ export function Cart() {
     }));
   };
 
-  // ✅ Quantity helpers working directly with products state
   const updateQuantity = (productId: string, delta: number) => {
     setQuantities((prev) => {
       const current = prev[productId] || 1;
@@ -138,13 +131,11 @@ export function Cart() {
   };
 
   const handleCheckout = () => {
-    // Validate cart before opening payment
     if (products.length === 0) {
       setPaymentError("Your cart is empty");
       return;
     }
 
-    // Open the payment overlay
     setShowPayment(true);
     setPaymentError(null);
   };
@@ -155,7 +146,6 @@ export function Cart() {
     router.push("/products");
   };
 
-  // --- Success Modal ---
   if (checkoutSuccess) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-indigo-50 flex items-center justify-center p-4">
@@ -207,7 +197,6 @@ export function Cart() {
     );
   }
 
-  // --- Empty Cart State ---
   if (products.length === 0 && !loading && !isCheckingOut) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-indigo-50 flex flex-col items-center justify-center p-4">
@@ -236,7 +225,6 @@ export function Cart() {
     );
   }
 
-  // --- Loading State ---
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-indigo-50 flex items-center justify-center">
@@ -248,45 +236,37 @@ export function Cart() {
     );
   }
 
-  // --- Main Cart UI: Now mapping directly from products state ✅ ---
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 via-cyan-50 to-indigo-50 py-8 md:py-12 px-4 sm:px-6 lg:px-8">
-      {/* ✅ Payment Overlay - Rendered at root level of Cart */}
       <PaymentOverlay
         isOpen={showPayment}
         onClose={() => {
           setShowPayment(false);
           setIsCheckingOut(false);
         }}
-        products={getPaymentProducts()} // ✅ Array of {id, quantity}
-        amount={getSubtotal()} // ✅ Pre-calculated total
+        products={getPaymentProducts()}
+        amount={getSubtotal()}
         currency="usd"
         onSuccess={() => {
-          // ✅ 1. Capture total BEFORE clearing state
           const finalTotal = getSubtotal();
           setPaidAmount(finalTotal);
           setPaidItemCount(products.length);
 
-          // 2. Now clear cart
           localStorage.removeItem("cart_items");
           setProducts([]);
           setQuantities({});
 
-          // 3. Show success
           setCheckoutSuccess(true);
           setShowPayment(false);
 
-          // 4. Auto-redirect (hackathon friendly)
           setTimeout(() => router.push("/products"), 3000);
         }}
         onError={(error) => {
-          // ✅ Payment failed
           setPaymentError(error);
           console.error("Payment error:", error);
         }}
       />
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
         <div className="text-center mb-10">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-3 tracking-tight">
             Your{" "}
@@ -301,7 +281,6 @@ export function Cart() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Cart Items: Mapping from products instead of cartItems */}
           <div className="lg:col-span-2 space-y-4">
             {products.map((product) => {
               const qty = getQuantity(product._id);
@@ -312,7 +291,6 @@ export function Cart() {
                   className="group bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-gray-200 hover:border-teal-300 hover:shadow-md transition-all duration-300"
                 >
                   <div className="flex flex-col sm:flex-row gap-4">
-                    {/* Product Image */}
                     <div className="sm:w-32 h-32 bg-gray-50 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0">
                       <img
                         src={product.src}
@@ -321,7 +299,6 @@ export function Cart() {
                       />
                     </div>
 
-                    {/* Product Details */}
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start gap-4">
                         <div className="min-w-0">
@@ -345,7 +322,6 @@ export function Cart() {
                         </button>
                       </div>
 
-                      {/* Quantity Controls */}
                       <div className="flex items-center gap-3 mt-4">
                         <span className="text-sm text-gray-600 font-medium">
                           Qty:
@@ -384,7 +360,6 @@ export function Cart() {
             })}
           </div>
 
-          {/* Order Summary */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200 sticky top-6">
               <h2 className="text-xl font-bold text-gray-900 mb-6 pb-4 border-b border-gray-200">
@@ -445,7 +420,6 @@ export function Cart() {
                 </button>
               </p>
 
-              {/* Trust Badges */}
               <div className="mt-6 pt-4 border-t border-gray-200">
                 <div className="flex items-center justify-center gap-4 text-xs text-gray-500">
                   <span className="flex items-center gap-1">

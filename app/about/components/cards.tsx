@@ -34,12 +34,10 @@ export function Cards() {
               key={idx}
               className="group bg-white dark:bg-gray-900 rounded-2xl p-8 border border-gray-200 dark:border-gray-800 hover:border-orange-500/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
             >
-              {/* Icon Container */}
               <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-orange-100 to-amber-100 dark:from-orange-900/30 dark:to-amber-900/30 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
                 <feature.icon className="w-7 h-7 text-orange-600 dark:text-orange-400" />
               </div>
 
-              {/* Content */}
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                 {feature.title}
               </h3>

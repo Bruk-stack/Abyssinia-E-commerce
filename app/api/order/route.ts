@@ -1,8 +1,6 @@
-// app/api/order/route.ts
 import { placeOrder } from "@/app/lib/placeOrder";
 import { NextResponse } from "next/server";
 
-// ✅ Helper: Validate userId format
 function isValidUserId(id: any): id is string {
   return typeof id === "string" && id.length > 0 && id.length <= 100;
 }
@@ -12,7 +10,6 @@ export async function POST(req: Request) {
     const { products, paymentIntentId, userId } = await req.json();
     console.log(products, paymentIntentId, userId);
 
-    // ✅ Validate required fields
     if (!products || !paymentIntentId || !userId) {
       return NextResponse.json(
         {
@@ -24,7 +21,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // ✅ Validate userId format (basic sanity check)
     if (!isValidUserId(userId)) {
       return NextResponse.json(
         { error: "Invalid userId format", success: false },
@@ -32,7 +28,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // ✅ Validate products array
     if (!Array.isArray(products) || products.length === 0) {
       return NextResponse.json(
         { error: "Products must be a non-empty array", success: false },
@@ -40,7 +35,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // ✅ Validate each product has id and quantity
     const validProducts = products.every(
       (p: any) =>
         p &&
@@ -59,7 +53,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // ✅ Place order (userId comes from frontend localStorage)
     const result = await placeOrder(products, userId, paymentIntentId);
 
     return NextResponse.json(result);

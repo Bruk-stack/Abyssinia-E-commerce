@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createPaymentIntent } from "@/app/stripe/stripeServices";
 
-// ✅ Helper: Validate product shape
 function isValidProduct(p: any): p is { id: string; quantity: number } {
   return (
     p &&
@@ -15,11 +14,9 @@ export async function POST(req: NextRequest) {
   try {
     const { products, currency } = await req.json();
 
-    // ✅ Normalize products to always be a validated array
     let productArray: Array<{ id: string; quantity: number }> = [];
 
     if (Array.isArray(products)) {
-      // Already an array → validate each item
       if (!products.every(isValidProduct)) {
         return NextResponse.json(
           {
@@ -35,7 +32,6 @@ export async function POST(req: NextRequest) {
       typeof products === "object" &&
       !Array.isArray(products)
     ) {
-      // ✅ Single product object → wrap in array
       if (!isValidProduct(products)) {
         return NextResponse.json(
           {
@@ -47,7 +43,6 @@ export async function POST(req: NextRequest) {
       }
       productArray = [products];
     } else if (products && typeof products === "string") {
-      // Rare: double-stringified JSON → parse then normalize
       try {
         const parsed = JSON.parse(products);
         if (Array.isArray(parsed)) {
@@ -77,7 +72,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ✅ Final safety check
     if (productArray.length === 0) {
       return NextResponse.json(
         { error: "At least one product is required", success: false },
@@ -85,7 +79,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ✅ Call your service with validated array (NO AUTH CHECK)
     const result = await createPaymentIntent(productArray, currency || "usd");
 
     if (result.success) {

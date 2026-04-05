@@ -7,7 +7,6 @@ export async function Fetchorders(userId: string) {
     const orders = await Order.find({ userId: userId }).select(
       "productId string total status items type price quantity ",
     );
-    // console.log(orders);
     let result: any[] = [];
     orders.forEach((order) => {
       order.items.forEach((item: any) => {

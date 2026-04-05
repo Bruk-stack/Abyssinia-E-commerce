@@ -1,23 +1,18 @@
-// app/api/vocabulary-suggest/route.ts
 import { NextResponse } from "next/server";
 import Groq from "groq-sdk";
 
-// ✅ Initialize Groq client
 const groq = new Groq({
   apiKey: process.env.GROQ_API,
 });
 
-// ✅ Type for request body
 interface VocabularyRequest {
-  text?: string; // Optional for safe access in catch
+  text?: string;
 }
 
 export async function POST(req: Request) {
-  // ✅ Declare body at function scope so it's accessible in catch
   let body: VocabularyRequest | null = null;
 
   try {
-    // ✅ Parse and validate input
     body = (await req.json()) as VocabularyRequest;
     const { text } = body;
 
@@ -32,7 +27,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // ✅ Build the prompt for Groq
     const prompt = `You are a professional writing assistant. Improve the vocabulary and phrasing of the following message while keeping the original meaning and tone.
 
 ORIGINAL MESSAGE:
@@ -49,7 +43,6 @@ EXAMPLE:
 Input: "hi i wanna know when my order gonna come its been 2 weeks"
 Output: "Hello, I wanted to check on the status of my order. It has been two weeks since I placed it, and I'm wondering when I can expect delivery."`;
 
-    // ✅ Call Groq API
     const completion = await groq.chat.completions.create({
       model: "openai/gpt-oss-120b",
       messages: [
@@ -69,16 +62,13 @@ Output: "Hello, I wanted to check on the status of my order. It has been two wee
       stream: false,
     });
 
-    // ✅ Extract and clean the response
     let suggestion = completion.choices[0]?.message?.content?.trim() || "";
 
-    // Clean potential markdown or quotes
     suggestion = suggestion
       .replace(/^["']|["']$/g, "")
       .replace(/^```|```$/g, "")
       .trim();
 
-    // ✅ Fallback if AI returns empty or unchanged text
     if (!suggestion || suggestion === text) {
       suggestion = text
         .replace(/\s+/g, " ")
@@ -90,7 +80,6 @@ Output: "Hello, I wanted to check on the status of my order. It has been two wee
       }
     }
 
-    // ✅ Return success response
     return NextResponse.json({
       success: true,
       suggestion,
@@ -106,7 +95,6 @@ Output: "Hello, I wanted to check on the status of my order. It has been two wee
 
     const groqError = err as { status?: number; message?: string };
 
-    // ✅ Handle specific Groq/API errors
     if (groqError?.status === 401) {
       return NextResponse.json(
         { success: false, error: "Invalid API key", suggestion: "" },
@@ -125,7 +113,6 @@ Output: "Hello, I wanted to check on the status of my order. It has been two wee
       );
     }
 
-    // ✅ Generic fallback — use body from outer scope with safe access
     const rawText = body?.text?.toString() || "";
     const fallback = rawText
       .replace(/\s+/g, " ")
@@ -145,7 +132,6 @@ Output: "Hello, I wanted to check on the status of my order. It has been two wee
   }
 }
 
-// ✅ CORS preflight support
 export async function OPTIONS() {
   return new NextResponse(null, {
     status: 204,

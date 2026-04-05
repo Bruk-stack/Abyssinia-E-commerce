@@ -62,7 +62,6 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
       aria-modal="true"
       aria-label="Mobile navigation menu"
     >
-      {/* Close button - top right */}
       <button
         onClick={onClose}
         className="absolute top-4 right-4 p-2 hover:bg-gray-100 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500"
@@ -71,7 +70,6 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
         <X size={24} aria-hidden="true" />
       </button>
 
-      {/* Search mode */}
       {isSearchActive ? (
         <div className="mb-8">
           <div className="flex items-center mb-4">
@@ -107,7 +105,6 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
                 aria-hidden="true"
               />
 
-              {/* SEARCH BUTTON (RIGHT SIDE) - ALWAYS VISIBLE */}
               <button
                 type="button"
                 onClick={triggerSearch}
@@ -126,7 +123,6 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
                 <SearchIcon size={18} aria-hidden="true" />
               </button>
 
-              {/* CLEAR BUTTON (OVERLAPS SEARCH BUTTON WHEN NEEDED) */}
               {searchQuery && (
                 <button
                   type="button"
@@ -142,7 +138,6 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
               )}
             </div>
 
-            {/* Optional: Keep "Cancel" button below for explicit exit */}
             <button
               type="button"
               onClick={() => {
@@ -157,7 +152,6 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
           </form>
         </div>
       ) : (
-        /* Navigation menu with icons for EVERY item */
         <ul className="flex flex-col gap-2 mt-8">
           {[
             { name: "Home", path: "/", icon: Home, active: isActive("/") },
@@ -215,12 +209,10 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
             );
           })}
 
-          {/* Dedicated Search button */}
           <li>
             <button
               onClick={() => {
                 setIsSearchActive(true);
-                // Focus will be handled by autoFocus in input
               }}
               className="flex items-center gap-3 w-full py-3 px-2 rounded-lg transition-colors text-gray-700 hover:bg-gray-50 hover:text-orange-600 mt-2"
               aria-label="Open search"

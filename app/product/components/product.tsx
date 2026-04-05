@@ -1,4 +1,3 @@
-// app/product/ProductInfoClient.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -21,7 +20,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-// Handle MongoDB Extended JSON format for _id
 interface MongoDBObjectId {
   $oid: string;
 }
@@ -36,7 +34,6 @@ interface Product {
   searchTerm: string[];
 }
 
-// Helper to normalize _id to string
 const getProductId = (id: string | MongoDBObjectId): string => {
   return typeof id === "string" ? id : (id as MongoDBObjectId).$oid;
 };
@@ -125,7 +122,6 @@ export function ProductInfoClient() {
 
   const handleBack = () => router.back();
 
-  // Loading State
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-12">
@@ -146,7 +142,6 @@ export function ProductInfoClient() {
     );
   }
 
-  // Error State
   if (error || !product) {
     return (
       <div className="container mx-auto px-4 py-20">
@@ -186,7 +181,6 @@ export function ProductInfoClient() {
 
   return (
     <section className="container mx-auto px-4 py-8 lg:py-12">
-      {/* Payment Overlay */}
       {product && (
         <PaymentOverlay
           isOpen={showPayment}
@@ -215,7 +209,6 @@ export function ProductInfoClient() {
         </p>
       )}
 
-      {/* Back Button */}
       <button
         onClick={handleBack}
         className="mb-6 flex items-center gap-2 text-sm text-gray-600 hover:text-orange-600 dark:text-gray-400 dark:hover:text-orange-400 transition group"
@@ -224,9 +217,7 @@ export function ProductInfoClient() {
         Back to products
       </button>
 
-      {/* Product Content */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 max-w-6xl mx-auto">
-        {/* Image */}
         <div className="relative group">
           <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
             {!imageLoaded && (
@@ -249,7 +240,6 @@ export function ProductInfoClient() {
           </div>
         </div>
 
-        {/* Details */}
         <Card className="border-0 shadow-none lg:shadow-lg lg:border lg:border-gray-200 lg:dark:border-gray-800 lg:rounded-2xl">
           <CardHeader className="pb-4">
             <div className="flex items-start justify-between gap-4">
@@ -271,7 +261,6 @@ export function ProductInfoClient() {
           </CardHeader>
 
           <CardContent className="space-y-6">
-            {/* Price */}
             <div className="flex items-baseline gap-3">
               <span className="text-3xl lg:text-4xl font-extrabold text-orange-600">
                 ${product.price.toFixed(2)}
@@ -284,7 +273,6 @@ export function ProductInfoClient() {
               </span>
             </div>
 
-            {/* Color */}
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Color:
@@ -301,7 +289,6 @@ export function ProductInfoClient() {
               </div>
             </div>
 
-            {/* Description */}
             <div className="prose prose-sm dark:prose-invert max-w-none text-gray-600 dark:text-gray-400">
               <p>
                 Premium quality {product.type.toLowerCase()} crafted with
@@ -311,7 +298,6 @@ export function ProductInfoClient() {
               </p>
             </div>
 
-            {/* Tags */}
             <div className="flex flex-wrap gap-2">
               {product.searchTerm.slice(0, 5).map((tag: string) => (
                 <span

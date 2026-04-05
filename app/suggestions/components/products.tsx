@@ -26,7 +26,6 @@ export function SuggestedProducts() {
       setLoading(true);
       setError(null);
 
-      // 1. Safely parse localStorage (keep your "key-words" key)
       const rawKeywords = localStorage.getItem("key-words");
       let keywords: string[] = [];
 
@@ -41,9 +40,7 @@ export function SuggestedProducts() {
             .filter(Boolean);
         }
       }
-      // ✅ REMOVED: Don't block if keywords empty — let backend handle it
 
-      // 2. Fetch from API (always call it now)
       const res = await fetch("/api/suggestion", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -72,7 +69,6 @@ export function SuggestedProducts() {
     };
   }, []);
 
-  // --- Loading State ---
   if (loading) {
     return (
       <section className="container mx-auto px-4 py-10">
@@ -92,7 +88,6 @@ export function SuggestedProducts() {
     );
   }
 
-  // --- Error State ---
   if (error) {
     return (
       <section className="container mx-auto px-4 py-16">
@@ -113,7 +108,6 @@ export function SuggestedProducts() {
     );
   }
 
-  // --- Empty State (AI returned no products) ---
   if (products.length === 0) {
     return (
       <section className="container mx-auto px-4 py-16">
@@ -131,9 +125,6 @@ export function SuggestedProducts() {
     );
   }
 
-  // ... (all your existing code above stays exactly the same)
-
-  // --- Success State ---
   return (
     <section className="container mx-auto px-4 py-10">
       <div className="flex items-center gap-2 mb-6">
@@ -143,7 +134,6 @@ export function SuggestedProducts() {
         </h2>
       </div>
 
-      {/* ✅ NEW: Helper text */}
       <p className="text-sm text-gray-500 dark:text-gray-400 -mt-4 mb-6">
         Suggestions get more personalized as you browse more products ✨
       </p>

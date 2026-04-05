@@ -1,4 +1,3 @@
-// app/providers/StripeProvider.tsx
 "use client";
 
 import { Elements } from "@stripe/react-stripe-js";

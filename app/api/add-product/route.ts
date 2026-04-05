@@ -1,9 +1,7 @@
-// app/api/products/route.ts
 import { NextResponse } from "next/server";
 import { connectDB } from "@/app/lib/db";
 import Product from "@/app/models/product";
 
-// ✅ Type for incoming product data (from frontend)
 interface ProductInput {
   type: string;
   color: string;
@@ -13,10 +11,9 @@ interface ProductInput {
   searchTerm: string[];
   inStock: number;
   description: string;
-  userId: string; // Required for ownership
+  userId: string;
 }
 
-// ✅ Validate product input
 function validateProductInput(data: Partial<ProductInput>): string | null {
   if (!data.type?.trim()) return "Product name is required";
   if (!data.color?.trim()) return "Color is required";
@@ -31,20 +28,17 @@ function validateProductInput(data: Partial<ProductInput>): string | null {
   return null;
 }
 
-// ✅ CREATE ONLY: POST /api/products
 export async function POST(req: Request) {
   try {
     await connectDB();
 
     const body: ProductInput = await req.json();
 
-    // ✅ Validate input
     const error = validateProductInput(body);
     if (error) {
       return NextResponse.json({ success: false, error }, { status: 400 });
     }
 
-    // ✅ Create new product
     const newProduct = await Product.create({
       ...body,
       searchTerm: body.searchTerm.map((t) => t.toLowerCase().trim()),

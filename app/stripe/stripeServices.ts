@@ -1,8 +1,6 @@
-// app/lib/payment/services/stripeServices.ts
-// app/lib/payment/services/stripeServices.ts
 import Stripe from "stripe";
-import { connectDB } from "../lib/db"; // ✅ Import DB connection
-import Product from "../models/product"; // ✅ Import Product model
+import { connectDB } from "../lib/db";
+import Product from "../models/product";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2023-10-16",
@@ -17,7 +15,7 @@ interface CreatePaymentIntentResult {
   success: boolean;
   clientSecret?: string;
   paymentIntentId?: string;
-  amount?: number; // In dollars
+  amount?: number;
   currency?: string;
   error?: string;
 }
@@ -27,23 +25,19 @@ export async function createPaymentIntent(
   currency: string = "usd",
 ): Promise<CreatePaymentIntentResult> {
   try {
-    // ✅ Connect to DB first
     await connectDB();
 
-    // ✅ Fetch real products to get actual prices
     const productIds = products.map((p) => p.id);
     const productsInfo = await Product.find({
       _id: { $in: productIds },
     })
-      .select("_id price") // Only fetch what we need
+      .select("_id price")
       .lean();
 
-    // ✅ Build price lookup map
     const priceMap = new Map(
       productsInfo.map((p: any) => [p._id.toString(), p.price]),
     );
 
-    // ✅ Calculate total using REAL prices (convert to cents for Stripe)
     let totalCents = 0;
     for (const item of products) {
       const price = priceMap.get(item.id);
@@ -56,7 +50,6 @@ export async function createPaymentIntent(
         throw new Error(`Invalid price for product "${item.id}"`);
       }
 
-      // Convert dollars to cents: $92.00 → 9200 cents
       totalCents += Math.round(price * 100) * item.quantity;
     }
 
@@ -67,7 +60,6 @@ export async function createPaymentIntent(
       };
     }
 
-    // ✅ Create PaymentIntent with Stripe (amount in cents)
     const paymentIntent = await stripe.paymentIntents.create({
       amount: totalCents,
       currency: currency.toLowerCase(),
@@ -82,7 +74,7 @@ export async function createPaymentIntent(
       success: true,
       clientSecret: paymentIntent.client_secret || undefined,
       paymentIntentId: paymentIntent.id,
-      amount: totalCents / 100, // ✅ Return in dollars for frontend/verification
+      amount: totalCents / 100,
       currency: currency,
     };
   } catch (error: any) {

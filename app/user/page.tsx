@@ -3,7 +3,6 @@ import { useEffect } from "react";
 
 export default function Page() {
   useEffect(() => {
-    // ✅ Store user as a proper object
     const userData = {
       userId: "64f2a9c1e3b8a7d9f4c2b1e8",
       name: "Abel Mitiku",
@@ -12,7 +11,6 @@ export default function Page() {
       location: "Bahir Dar, Near Benmas",
     };
 
-    // ✅ Save as JSON string
     localStorage.setItem("user", JSON.stringify(userData));
 
     console.log("✅ User saved:", userData);

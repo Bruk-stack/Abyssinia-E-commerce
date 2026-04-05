@@ -1,44 +1,36 @@
-// app/api/recommend/route.ts
 import { NextResponse } from "next/server";
 import Groq from "groq-sdk";
 import { connectDB } from "@/app/lib/db";
 import Product from "@/app/models/product";
 import type { Document } from "mongoose";
 
-// ✅ Type for request body
 interface RecommendRequest {
   category?: string;
   type?: string;
   color?: string;
 }
 
-// ✅ Type for Groq response parsing
 interface GroqSuggestion {
   suggestedDescription: string;
   suggestedTags: string[];
 }
 
-// ✅ Type for similar product (from .lean())
 interface LeanProduct {
   description?: string;
   searchTerm?: string[];
 }
 
-// ✅ Initialize Groq client
 const groq = new Groq({
   apiKey: process.env.GROQ_API,
 });
 
 export async function POST(req: Request) {
-  // ✅ Declare body at function scope so it's accessible in catch
   let body: RecommendRequest | null = null;
 
   try {
-    // ✅ Parse input
     body = (await req.json()) as RecommendRequest;
     const { category, type, color } = body;
 
-    // ✅ Validate required fields
     if (!category || !type || !color) {
       return NextResponse.json(
         {
@@ -51,7 +43,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // ✅ Connect to DB and fetch similar products
     await connectDB();
     const similarProducts: LeanProduct[] = await Product.find({
       category,
@@ -62,7 +53,6 @@ export async function POST(req: Request) {
       .lean()
       .exec();
 
-    // ✅ Build the prompt for Groq
     const prompt = `You are an expert e-commerce copywriter and SEO specialist.
 
 PRODUCT INFO:
@@ -99,7 +89,6 @@ EXAMPLE VALID OUTPUT:
   "suggestedTags": ["dress", "casual", "beige", "comfortable", "versatile", "everyday", "fashion"]
 }`;
 
-    // ✅ Call Groq API
     const completion = await groq.chat.completions.create({
       model: "openai/gpt-oss-120b",
       messages: [
@@ -119,7 +108,6 @@ EXAMPLE VALID OUTPUT:
       stream: false,
     });
 
-    // ✅ Parse AI response with safe access
     const aiContent = completion.choices?.[0]?.message?.content;
     let aiResponse = (aiContent ?? "").trim();
     aiResponse = aiResponse.replace(/```json\s*|\s*```/g, "").trim();
@@ -135,7 +123,6 @@ EXAMPLE VALID OUTPUT:
         parsed = result;
       }
     } catch {
-      // Fallback regex extraction with proper null checks
       const descMatch = aiResponse.match(
         /"suggestedDescription"\s*:\s*"([^"]+)"/,
       );
@@ -152,7 +139,6 @@ EXAMPLE VALID OUTPUT:
       }
     }
 
-    // ✅ Build fallback values with safe string operations
     const safeCategory = String(category ?? "").toLowerCase();
     const safeColor = String(color ?? "").toLowerCase();
     const safeType = String(type ?? "").toLowerCase();
@@ -170,7 +156,6 @@ EXAMPLE VALID OUTPUT:
             6,
           );
 
-    // ✅ Return success response
     return NextResponse.json({
       success: true,
       suggestedDescription,
@@ -187,7 +172,6 @@ EXAMPLE VALID OUTPUT:
     const errorMessage =
       err instanceof Error ? err.message : "Unknown error occurred";
 
-    // ✅ Handle specific Groq/API errors with type guard
     const groqError = err as { status?: number };
 
     if (groqError?.status === 401) {
@@ -214,7 +198,6 @@ EXAMPLE VALID OUTPUT:
       );
     }
 
-    // ✅ Generic fallback — use body from outer scope with safe access
     const safeCat = body?.category?.toString().toLowerCase() ?? "fashion";
     const safeCol = body?.color?.toString().toLowerCase() ?? "neutral";
     const safeTyp = body?.type?.toString().toLowerCase() ?? "product";
@@ -238,7 +221,6 @@ EXAMPLE VALID OUTPUT:
   }
 }
 
-// ✅ CORS preflight support
 export async function OPTIONS() {
   return new NextResponse(null, {
     status: 204,

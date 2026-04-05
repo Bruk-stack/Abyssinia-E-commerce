@@ -1,4 +1,3 @@
-// app/account/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -18,7 +17,6 @@ import {
   AlertCircle,
 } from "lucide-react";
 
-// ✅ Demo user helper (reusable across app)
 const DemoUser = {
   KEY_ID: "userId",
   KEY_PROFILE: "user",
@@ -59,7 +57,6 @@ const DemoUser = {
   },
 };
 
-// ✅ Interfaces
 interface UserProfile {
   userId: string;
   name: string;
@@ -101,18 +98,14 @@ export default function AccountDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  // ✅ Get userId and profile from localStorage (no auth)
   useEffect(() => {
-    // Try to get existing demo user
     const existingUser = DemoUser.get();
     const existingId = DemoUser.getUserId();
 
     if (existingId && existingUser) {
-      // ✅ User exists → use it
       setUserId(existingId);
       setUser(existingUser);
     } else {
-      // ✅ No user → create guest demo user
       const guest = DemoUser.setup();
       if (guest) {
         setUserId(guest.userId);
@@ -122,7 +115,6 @@ export default function AccountDashboard() {
     setLoading(false);
   }, []);
 
-  // ✅ Fetch orders from backend (userId is now guaranteed)
   useEffect(() => {
     if (!userId) return;
 
@@ -131,16 +123,14 @@ export default function AccountDashboard() {
         const res = await fetch("/api/orders", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId }), // ✅ Send userId from localStorage
+          body: JSON.stringify({ userId }),
         });
         const data = await res.json();
         console.log(data);
 
-        // Inside your fetchOrders useEffect:
         if (res.ok && data.success) {
           const rawItems = data.result?.result || [];
 
-          // ✅ Transform flat items → grouped orders (basic example)
           const transformedOrders: Order[] = rawItems.map(
             (item: any, index: number) => ({
               _id: item.productId || `temp_${index}`,
@@ -150,14 +140,14 @@ export default function AccountDashboard() {
                   productId: item.productId,
                   type: item.type,
                   price: item.price,
-                  quantity: item.items || 1, // ← "items" in response is actually quantity
+                  quantity: item.items || 1,
                   subTotal: item.subTotal,
                   image: item.image,
                 },
               ],
               total: item.subTotal || item.price * (item.items || 1),
-              status: "delivered", // ← default since backend doesn't send it
-              createdAt: new Date().toISOString(), // ← default since backend doesn't send it
+              status: "delivered",
+              createdAt: new Date().toISOString(),
             }),
           );
 
@@ -165,14 +155,12 @@ export default function AccountDashboard() {
         }
       } catch (err) {
         console.error("Failed to fetch orders:", err);
-        // Don't set error here — orders can be empty legitimately
       }
     };
 
     fetchOrders();
   }, [userId]);
 
-  // ✅ Simple logout (clear localStorage)
   const handleLogout = () => {
     if (window.confirm("Log out and clear your session?")) {
       DemoUser.clear();
@@ -181,15 +169,12 @@ export default function AccountDashboard() {
     }
   };
 
-  // ✅ Update profile (demo only - no backend)
   const handleSaveProfile = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSaving(true);
 
-    // Demo: simulate API call + update localStorage
     await new Promise((resolve) => setTimeout(resolve, 800));
 
-    // Get form values (simplified for demo)
     const form = e.currentTarget;
     const updatedProfile = {
       ...user,
@@ -202,15 +187,12 @@ export default function AccountDashboard() {
         .value,
     };
 
-    // Save to localStorage for demo persistence
     localStorage.setItem(DemoUser.KEY_PROFILE, JSON.stringify(updatedProfile));
-    // setUser(updatedProfile);
 
     setSaving(false);
     alert("✅ Profile updated! (Demo mode)");
   };
 
-  // ✅ Format date for display
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       month: "short",
@@ -219,7 +201,6 @@ export default function AccountDashboard() {
     });
   };
 
-  // ✅ Status badge colors
   const getStatusStyles = (status: Order["status"]) => {
     const styles: Record<Order["status"], string> = {
       pending:
@@ -235,7 +216,6 @@ export default function AccountDashboard() {
     return styles[status] || styles.pending;
   };
 
-  // --- Loading State ---
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
@@ -249,7 +229,6 @@ export default function AccountDashboard() {
     );
   }
 
-  // --- Error State ---
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center p-4">
@@ -272,7 +251,6 @@ export default function AccountDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      {/* Header */}
       <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
@@ -306,10 +284,8 @@ export default function AccountDashboard() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar Navigation */}
           <aside className="lg:col-span-1">
             <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 sticky top-24 shadow-sm border border-gray-200 dark:border-gray-800">
-              {/* User Summary */}
               <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-200 dark:border-gray-800">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 dark:from-orange-900/30 dark:to-amber-900/30 flex items-center justify-center">
                   <User className="w-6 h-6 text-orange-600 dark:text-orange-400" />
@@ -324,9 +300,7 @@ export default function AccountDashboard() {
                 </div>
               </div>
 
-              {/* Nav Links */}
               <nav className="space-y-1">
-                {/* In-dashboard tabs */}
                 {[
                   { id: "overview", label: "Overview", icon: User },
                   { id: "orders", label: "Order History", icon: Package },
@@ -346,7 +320,6 @@ export default function AccountDashboard() {
                   </button>
                 ))}
 
-                {/* External link - separate from tabs */}
                 <button
                   onClick={() => router.push("/my-products")} // ✅ Absolute path + hyphenated
                   className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
@@ -358,12 +331,9 @@ export default function AccountDashboard() {
             </div>
           </aside>
 
-          {/* Main Content */}
           <main className="lg:col-span-3 space-y-6">
-            {/* ✅ Overview Tab */}
             {activeTab === "overview" && (
               <div className="space-y-6">
-                {/* Personal Info Card */}
                 <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white">
@@ -418,7 +388,6 @@ export default function AccountDashboard() {
                   </div>
                 </div>
 
-                {/* Recent Orders Card */}
                 <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
                   <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white">
@@ -480,7 +449,6 @@ export default function AccountDashboard() {
               </div>
             )}
 
-            {/* ✅ Orders Tab */}
             {activeTab === "orders" && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -584,7 +552,6 @@ export default function AccountDashboard() {
               </div>
             )}
 
-            {/* ✅ Payment Tab (Placeholder for Demo) */}
             {activeTab === "payment" && (
               <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800">
                 <div className="flex items-center justify-between mb-6">

@@ -8,11 +8,10 @@ export async function POST(req: Request) {
   try {
     await connectDB();
 
-    // Or with sorting, projection, etc.
     const products = await Product.find({ userId })
-      .sort({ createdAt: -1 }) // newest first
-      .select("-searchTerm") // exclude large fields if needed
-      .lean(); // return plain JS objects (faster, no Mongoose docs)
+      .sort({ createdAt: -1 })
+      .select("-searchTerm")
+      .lean();
 
     return NextResponse.json({ products: products, success: true });
   } catch (err: any) {

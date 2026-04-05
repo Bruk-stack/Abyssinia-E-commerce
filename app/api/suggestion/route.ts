@@ -11,14 +11,12 @@ export async function POST(req: Request) {
     const { keyWords } = await req.json();
     console.log(keyWords);
 
-    // 1. Fetch a subset of products (adjust limit based on your DB size)
     const products = await Product.find().limit(60).lean();
 
     if (products.length === 0) {
       return NextResponse.json({ success: false, products: [] });
     }
 
-    // 2. Format for AI (include all fields needed in output)
     const productsContext = products.map((p: any) => ({
       _id: p._id.toString(),
       type: p.type,
@@ -29,7 +27,6 @@ export async function POST(req: Request) {
       searchTerm: p.searchTerm,
     }));
 
-    // ✅ 3. Dynamic prompt based on history presence
     const hasHistory =
       keyWords && Array.isArray(keyWords) && keyWords.length > 0;
     const contextPrompt = hasHistory
@@ -58,21 +55,19 @@ export async function POST(req: Request) {
       Output the JSON array now:
     `;
 
-    // 4. Call Groq
     const completion = await groq.chat.completions.create({
       model: "openai/gpt-oss-120b",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt },
       ],
-      temperature: 0.2, // Slightly higher for variety when no history exists
+      temperature: 0.2,
       response_format: { type: "json_object" },
     });
 
     const content = completion.choices[0]?.message?.content;
     if (!content) throw new Error("No content from AI");
 
-    // 5. Clean & Parse (removes potential markdown wrappers)
     let cleanContent = content.trim();
     if (cleanContent.startsWith("```json"))
       cleanContent = cleanContent.slice(7);

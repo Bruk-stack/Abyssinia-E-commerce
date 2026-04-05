@@ -1,4 +1,3 @@
-// app/products/form/page.tsx (or use as component)
 "use client";
 
 import { useEffect, useState, useRef } from "react";
@@ -17,7 +16,6 @@ import {
   Trash2,
 } from "lucide-react";
 
-// ✅ Types matching your Product schema
 export interface ProductFormData {
   type: string;
   color: string;
@@ -27,7 +25,7 @@ export interface ProductFormData {
   searchTerm: string[];
   inStock: number | string;
   description: string;
-  userId?: string; // Auto-filled from localStorage
+  userId?: string;
 }
 
 interface ProductFormProps {
@@ -59,16 +57,13 @@ export default function ProductForm({
   const [success, setSuccess] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
   const tagInputRef = useRef<HTMLInputElement>(null);
-  // Add these to your existing state declarations
   const [recommendation, setRecommendation] = useState<string>("");
   const [recommendationLoading, setRecommendationLoading] = useState(false);
-  // ✅ Add this with your other state
   const [suggestedPrice, setSuggestedPrice] = useState<number | null>(null);
   const [recommendationError, setRecommendationError] = useState<string | null>(
     null,
   );
 
-  // ✅ Add these with your other state declarations
   const [recommendationDes, setRecommendationDes] = useState<string>("");
   const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
   const [recommendationDesLoading, setRecommendationDesLoading] =
@@ -77,7 +72,6 @@ export default function ProductForm({
     string | null
   >(null);
 
-  // ✅ Load initial data for edit mode
   useEffect(() => {
     if (mode === "edit" && initialData) {
       setForm({
@@ -95,7 +89,6 @@ export default function ProductForm({
     }
   }, [mode, initialData]);
 
-  // ✅ Auto-fill userId from localStorage
   useEffect(() => {
     if (typeof window !== "undefined") {
       const userId = localStorage.getItem("userId");
@@ -105,18 +98,13 @@ export default function ProductForm({
     }
   }, []);
 
-  //for description
-
-  // ✅ Debounced AI recommendation effect
   useEffect(() => {
-    // Only trigger when all 3 required fields have values
     if (!form.category || !form.type || !form.color) {
       setRecommendation("");
       setSuggestedTags([]);
       return;
     }
 
-    // ✅ Debounce: wait 800ms after user stops typing
     const timeoutId = setTimeout(async () => {
       const controller = new AbortController();
       setRecommendationDesLoading(true);
@@ -145,7 +133,6 @@ export default function ProductForm({
           setSuggestedTags(data.suggestedTags || []);
         }
       } catch (err: any) {
-        // Ignore abort errors (user typed again)
         if (err.name !== "AbortError") {
           console.error("❌ Recommendation error:", err);
           setRecommendationDesError(
@@ -158,15 +145,12 @@ export default function ProductForm({
         setRecommendationDesLoading(false);
       }
 
-      // Cleanup: abort if deps change
       return () => controller.abort();
-    }, 800); // Adjust debounce delay as needed
+    }, 800);
 
-    // Cleanup: clear timeout if user types again
     return () => clearTimeout(timeoutId);
   }, [form.category, form.type, form.color]);
 
-  // ✅ Handle text/number inputs
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -186,7 +170,6 @@ export default function ProductForm({
     setSuccess(null);
   };
 
-  // ✅ Handle tag (searchTerm) input
   const handleAddTag = (e?: React.KeyboardEvent<HTMLInputElement>) => {
     if (e?.key === "Enter" || e === undefined) {
       e?.preventDefault();
@@ -208,14 +191,12 @@ export default function ProductForm({
     }));
   };
 
-  // ✅ Handle image URL preview
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setForm((prev) => ({ ...prev, src: value }));
     setImagePreview(value);
   };
 
-  // ✅ Validate form
   const validate = (): string | null => {
     if (!form.type.trim()) return "Product name is required";
     if (!form.color.trim()) return "Color is required";
@@ -262,7 +243,7 @@ export default function ProductForm({
 
         if (data.success) {
           setRecommendation(data.recommendation || "");
-          setSuggestedPrice(data.suggestedPrice ?? null); // ✅ Capture the raw number
+          setSuggestedPrice(data.suggestedPrice ?? null);
         }
       } catch (err: any) {
         if (err.name !== "AbortError") {
@@ -281,7 +262,6 @@ export default function ProductForm({
     return () => clearTimeout(timeoutId);
   }, [form.category, form.price, form.type, form.color]);
 
-  // ✅ Submit handler
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -296,7 +276,6 @@ export default function ProductForm({
     }
 
     try {
-      // ✅ Prepare payload (ensure numbers are numbers)
       const payload = {
         ...form,
         price: Number(form.price),
@@ -327,7 +306,6 @@ export default function ProductForm({
         `✅ Product ${mode === "edit" ? "updated" : "created"} successfully!`,
       );
 
-      // ✅ Reset form for create mode
       if (mode === "create") {
         setForm({
           type: "",
@@ -343,7 +321,6 @@ export default function ProductForm({
         setImagePreview("");
       }
 
-      // ✅ Callback + redirect
       onSuccess?.();
       if (mode === "create") {
         setTimeout(() => router.push("/my-products"), 1500);
@@ -356,7 +333,6 @@ export default function ProductForm({
     }
   };
 
-  // ✅ Categories for dropdown
   const categories = [
     "Dress",
     "Shirt",
@@ -369,7 +345,6 @@ export default function ProductForm({
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      {/* Header */}
       <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center gap-3">
@@ -395,7 +370,6 @@ export default function ProductForm({
       </header>
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Alerts */}
         {error && (
           <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-start gap-3">
             <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
@@ -412,12 +386,10 @@ export default function ProductForm({
           </div>
         )}
 
-        {/* Form */}
         <form
           onSubmit={handleSubmit}
           className="bg-white dark:bg-gray-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-800 space-y-6"
         >
-          {/* Product Name & Category Row */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -455,7 +427,6 @@ export default function ProductForm({
             </div>
           </div>
 
-          {/* Color & Price Row */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -489,7 +460,6 @@ export default function ProductForm({
             </div>
           </div>
 
-          {/* ✅ AI Pricing Recommendation Section */}
           {form.category && form.price && form.type && form.color && (
             <div className="mt-4 p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl">
               <div className="flex items-start gap-3">
@@ -512,12 +482,10 @@ export default function ProductForm({
                     </p>
                   ) : recommendation ? (
                     <>
-                      {/* Display the text recommendation */}
                       <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                         {recommendation}
                       </p>
 
-                      {/* ✅ Show "Use suggested price" button ONLY if we have a numeric value */}
                       {suggestedPrice !== null && (
                         <button
                           type="button"
@@ -545,7 +513,6 @@ export default function ProductForm({
             </div>
           )}
 
-          {/* Stock */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               In Stock *
@@ -565,7 +532,6 @@ export default function ProductForm({
             </p>
           </div>
 
-          {/* Image URL */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Image URL *
@@ -595,7 +561,6 @@ export default function ProductForm({
               )}
             </div>
 
-            {/* Image Preview */}
             {imagePreview && (
               <div className="mt-3 p-2 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1">
@@ -614,7 +579,6 @@ export default function ProductForm({
             )}
           </div>
 
-          {/* Search Tags */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Search Tags
@@ -663,7 +627,6 @@ export default function ProductForm({
             </p>
           </div>
 
-          {/* ✅ AI Recommendation Section */}
           {form.category && form.type && form.color && (
             <div className="mt-4 p-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl">
               <div className="flex items-start gap-3">
@@ -686,12 +649,10 @@ export default function ProductForm({
                     </p>
                   ) : recommendationDes ? (
                     <>
-                      {/* Display the suggested description */}
                       <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-2">
                         {recommendationDes}
                       </p>
 
-                      {/* ✅ Button: Use this description (ONLY fills description field) */}
                       <button
                         type="button"
                         onClick={() => {
@@ -708,7 +669,6 @@ export default function ProductForm({
                         Use this description
                       </button>
 
-                      {/* ✅ Optional: Show suggested tags as clickable chips */}
                       {suggestedTags.length > 0 && (
                         <div className="mt-3 flex flex-wrap gap-1.5">
                           <span className="text-[10px] text-gray-500 dark:text-gray-400 mr-1">
@@ -748,7 +708,6 @@ export default function ProductForm({
               </div>
             </div>
           )}
-          {/* ✅ Description Field */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Description
@@ -774,7 +733,6 @@ export default function ProductForm({
             </div>
           </div>
 
-          {/* Submit Buttons */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-800">
             <button
               type="button"

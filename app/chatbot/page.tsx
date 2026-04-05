@@ -1,4 +1,3 @@
-// app/chatbot/page.tsx
 "use client";
 
 import { useState } from "react";
@@ -37,7 +36,6 @@ export default function ChatPage() {
 
       if (!data.success) {
         console.log(data.error);
-        // Optional: Show error message to user
         return;
       }
 

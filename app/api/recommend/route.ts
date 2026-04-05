@@ -1,17 +1,14 @@
-// app/api/recommend/route.ts
 import { NextResponse } from "next/server";
 import Groq from "groq-sdk";
 import { connectDB } from "@/app/lib/db";
 import Product from "@/app/models/product";
 
-// ✅ Initialize Groq client
 const groq = new Groq({
   apiKey: process.env.GROQ_API,
 });
 
 export async function POST(req: Request) {
   try {
-    // ✅ Parse and validate input
     const body = await req.json();
     const { category, price, type, color } = body;
 
@@ -28,7 +25,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // ✅ Ensure price is a valid number
     const numericPrice = Number(price);
     if (isNaN(numericPrice) || numericPrice < 0) {
       return NextResponse.json(
@@ -43,19 +39,16 @@ export async function POST(req: Request) {
       );
     }
 
-    // ✅ Connect to DB and fetch similar products for price comparison
     await connectDB();
 
-    // Find products in same category (exclude the current product if editing)
     const similarProducts = await Product.find({
       category,
-      type: { $ne: type }, // Exclude exact same product name
+      type: { $ne: type },
     })
       .select("price type")
-      .limit(20) // Keep it efficient
+      .limit(20)
       .lean();
 
-    // Calculate average price from real data
     const prices = similarProducts
       .map((p: any) => p.price)
       .filter((p: number) => typeof p === "number" && p > 0);
@@ -66,9 +59,8 @@ export async function POST(req: Request) {
               prices.length) *
               100,
           ) / 100
-        : numericPrice; // Fallback to user's price if no similar products
+        : numericPrice;
 
-    // ✅ Build the prompt for Groq - focused on EXACT price output
     const prompt = `You are an AI ecommerce pricing expert.
 
 PRODUCT INFO:
@@ -98,7 +90,6 @@ STRICT OUTPUT RULES:
 Example valid output:
 {"suggestedPrice":89.99,"assessment":"Fair","reason":"Aligns with market average for this category."}`;
 
-    // ✅ Call Groq API
     const completion = await groq.chat.completions.create({
       model: "openai/gpt-oss-120b",
       messages: [
@@ -112,19 +103,16 @@ Example valid output:
           content: prompt,
         },
       ],
-      temperature: 0.3, // Lower temp = more precise/consistent numbers
+      temperature: 0.3,
       max_tokens: 200,
       top_p: 1,
       stream: false,
     });
 
-    // ✅ Parse AI response
     let aiResponse = completion.choices[0]?.message?.content?.trim() || "";
 
-    // Clean potential markdown code blocks
     aiResponse = aiResponse.replace(/```json\s*|\s*```/g, "").trim();
 
-    // Try to parse JSON from AI response
     let parsed: {
       suggestedPrice: number;
       assessment: string;
@@ -133,7 +121,6 @@ Example valid output:
     try {
       parsed = JSON.parse(aiResponse);
     } catch {
-      // Fallback: try to extract numbers with regex if JSON parse fails
       const priceMatch = aiResponse.match(/"suggestedPrice"\s*:\s*(\d+\.?\d*)/);
       const assessmentMatch = aiResponse.match(/"assessment"\s*:\s*"([^"]+)"/);
       const reasonMatch = aiResponse.match(/"reason"\s*:\s*"([^"]+)"/);
@@ -147,7 +134,6 @@ Example valid output:
       }
     }
 
-    // ✅ Build recommendation text for frontend display
     const suggestedPrice =
       parsed?.suggestedPrice ?? Math.round(averagePrice * 100) / 100;
     const assessment =
@@ -163,12 +149,11 @@ Example valid output:
 
     const recommendation = `$${suggestedPrice} • ${assessment}: ${reason}`;
 
-    // ✅ Return success response (matching frontend + extra price data)
     return NextResponse.json({
       success: true,
-      recommendation, // Text for display: "$89.99 • Fair: Market average is $92..."
-      averagePrice, // Raw number for charts/logic
-      suggestedPrice, // Raw number for auto-fill
+      recommendation,
+      averagePrice,
+      suggestedPrice,
       meta: {
         model: "openai/gpt-oss-120b",
         similarProductsCount: prices.length,
@@ -178,7 +163,6 @@ Example valid output:
   } catch (err: any) {
     console.error("❌ Groq pricing recommendation error:", err);
 
-    // ✅ Handle specific Groq/API errors
     if (err?.status === 401) {
       return NextResponse.json(
         {
@@ -218,24 +202,22 @@ Example valid output:
       );
     }
 
-    // ✅ Generic fallback with simple calculation
-    const fallbackAvg = 75; // Safe default
+    const fallbackAvg = 75;
     const fallbackSuggested = Math.round(fallbackAvg * 100) / 100;
 
     return NextResponse.json(
       {
-        success: true, // Still "success" so UI doesn't break
+        success: true,
         recommendation: `$${fallbackSuggested} • Fair: Using default market data.`,
         averagePrice: fallbackAvg,
         suggestedPrice: fallbackSuggested,
         warning: "Used fallback pricing (AI service unavailable)",
       },
-      { status: 200 }, // Return 200 so frontend still works
+      { status: 200 },
     );
   }
 }
 
-// ✅ Optional: CORS preflight support
 export async function OPTIONS() {
   return new NextResponse(null, {
     status: 204,

@@ -45,7 +45,6 @@ export async function POST(req: Request) {
   } catch (err: any) {
     console.error("Groq API error:", err);
 
-    // Handle specific Groq errors
     if (err?.status === 401) {
       return NextResponse.json(
         { success: false, error: "Invalid API key" },

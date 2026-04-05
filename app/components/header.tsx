@@ -57,7 +57,6 @@ export function Navigation() {
 
   return (
     <nav className="w-full flex justify-between items-center bg-black text-white shadow-lg sticky top-0 z-50 px-4 md:px-8 py-3">
-      {/* Logo */}
       <Link href="/" className="flex-shrink-0">
         <img
           src="/Gemini_Generated_Image_if68znif68znif68.png"
@@ -66,7 +65,6 @@ export function Navigation() {
         />
       </Link>
 
-      {/* Mobile Menu Toggle */}
       <button
         className="md:hidden p-2 rounded-lg hover:bg-gray-800 transition"
         onClick={() => setMobileNavOpen(true)}
@@ -75,7 +73,6 @@ export function Navigation() {
         <Menu className="h-6 w-6 text-white" />
       </button>
 
-      {/* Desktop Navigation */}
       <ul className="hidden md:flex items-center gap-1 lg:gap-2">
         {navItems.map((item) => (
           <li key={item.path}>
@@ -85,7 +82,7 @@ export function Navigation() {
                 ${
                   isActive(item.path)
                     ? "bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400"
-                    : "text-white hover:text-orange-600 hover:bg-gray-800" // ✅ Static: white, hover unchanged
+                    : "text-white hover:text-orange-600 hover:bg-gray-800"
                 }`}
             >
               {item.label}
@@ -94,14 +91,13 @@ export function Navigation() {
         ))}
       </ul>
 
-      {/* Right Actions */}
       <div className="flex items-center gap-1 sm:gap-2">
         <button
           onClick={() => setSearchOpen((prev) => !prev)}
           className="p-2 rounded-full hover:bg-gray-800 transition"
           aria-label="Toggle search"
         >
-          <Search className="h-5 w-5 text-white" /> {/* ✅ Explicit white */}
+          <Search className="h-5 w-5 text-white" />
         </button>
 
         <Link
@@ -116,9 +112,7 @@ export function Navigation() {
           href="/chatbot"
           className="p-2 rounded-full hover:bg-gray-800 transition"
           aria-label="Chat support"
-        >
-          {/* ✅ Was missing! */}
-        </Link>
+        ></Link>
 
         <Link
           href="/profile"
@@ -129,7 +123,6 @@ export function Navigation() {
         </Link>
       </div>
 
-      {/* Search Dropdown */}
       {searchOpen && (
         <div
           ref={searchRef}
@@ -180,7 +173,6 @@ export function Navigation() {
         </div>
       )}
 
-      {/* Mobile Navigation */}
       {mobileNavOpen && (
         <MobileNav
           isOpen={mobileNavOpen}

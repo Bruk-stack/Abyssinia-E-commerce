@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo } from "react";
 import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
 import { X } from "lucide-react";
 
-// ✅ Flexible product type: single OR array
 type ProductInput =
   | { id: string; quantity: number }
   | { id: string; quantity: number }[];
@@ -12,8 +11,8 @@ type ProductInput =
 interface PaymentOverlayProps {
   isOpen: boolean;
   onClose: () => void;
-  products: ProductInput; // ✅ Accepts single or array
-  amount: number; // Total amount (pre-calculated by parent)
+  products: ProductInput;
+  amount: number;
   currency?: string;
   onSuccess?: (orderId?: string) => void;
   onError?: (error: string) => void;
@@ -38,7 +37,6 @@ export function PaymentOverlay({
       : "",
   );
 
-  // ✅ Normalize input to array internally
   const productsArray = useMemo(() => {
     if (Array.isArray(products)) return products;
     return [products];
@@ -61,13 +59,12 @@ export function PaymentOverlay({
     setErrorMessage(null);
 
     try {
-      // ✅ Send normalized array to backend (no double-stringify!)
       const piResponse = await fetch("/api/create-payment-intent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          products: productsArray, // ✅ Clean array of {id, quantity}
+          products: productsArray,
           currency,
         }),
       });
@@ -96,7 +93,6 @@ export function PaymentOverlay({
         throw new Error("Payment not confirmed");
       }
 
-      // Inside handleSubmit, before fetch("/api/order", ...)
       console.log("📦 Sending to /api/order:", {
         products: productsArray,
         paymentIntentId: paymentIntent?.id,
@@ -107,7 +103,6 @@ export function PaymentOverlay({
       });
       const userId = localStorage.getItem("userId");
 
-      // ✅ Send same normalized array to order endpoint
       const orderResponse = await fetch("/api/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -126,7 +121,6 @@ export function PaymentOverlay({
 
       if (email) localStorage.setItem("user_email", email);
 
-      // ✅ Pass order ID back to parent if needed
       onSuccess?.(orderResult.orderId);
       onClose();
     } catch (err: any) {
@@ -141,7 +135,6 @@ export function PaymentOverlay({
 
   if (!isOpen) return null;
 
-  // ✅ Dynamic title based on item count
   const itemCount = productsArray.length;
   const title =
     itemCount === 1 ? "Secure Checkout" : `Checkout (${itemCount} items)`;
@@ -169,7 +162,6 @@ export function PaymentOverlay({
           </span>
         </h2>
 
-        {/* ✅ Order Summary Preview */}
         {itemCount > 1 && (
           <div className="mb-5 p-4 bg-gray-50 rounded-xl border border-gray-200">
             <p className="text-sm font-medium text-gray-700 mb-2">Items:</p>

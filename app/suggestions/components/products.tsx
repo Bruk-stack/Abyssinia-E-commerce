@@ -131,6 +131,8 @@ export function SuggestedProducts() {
     );
   }
 
+  // ... (all your existing code above stays exactly the same)
+
   // --- Success State ---
   return (
     <section className="container mx-auto px-4 py-10">
@@ -140,6 +142,11 @@ export function SuggestedProducts() {
           AI Suggestions
         </h2>
       </div>
+
+      {/* ✅ NEW: Helper text */}
+      <p className="text-sm text-gray-500 dark:text-gray-400 -mt-4 mb-6">
+        Suggestions get more personalized as you browse more products ✨
+      </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {products.map((product) => (
